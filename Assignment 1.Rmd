@@ -1,0 +1,23 @@
+---
+title: "Assignment 1"
+output: pdf_document
+date: "2023-02-07"
+---
+
+```{r warning = FALSE, message = FALSE, include = FALSE}
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(rvest)
+library(MASS)
+library(nnet)
+library(broom)
+library(knitr)
+library(car)
+library(Stat2Data)
+library(scales)
+library(gridExtra)
+library(grid)
+```
+
+# Import Data
