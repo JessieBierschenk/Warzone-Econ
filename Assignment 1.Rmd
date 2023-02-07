@@ -18,10 +18,21 @@ library(Stat2Data)
 library(scales)
 library(gridExtra)
 library(grid)
+library(haven)
 ```
 
 # Import Data
 ```{r}
 NL_data = read.csv("data_month_NL.csv")
+GDP_data = read_dta("Region by year GDP panel.dta")
+view(NL_data)
+view(GDP_data)
+```
+
+# New dataset
+```{r}
+all_data = left_join(NL_data, GDP_data, by = c("year"="year", "reg"="reg"))
+all_data=all_data %>% 
+  mutate(NLI=nl_sum_4/(area_sq_km - 0.141*nl_nodata_4),NLI2 = nl_mean_4/nl_std_4)
 ```
 
