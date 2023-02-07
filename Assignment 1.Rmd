@@ -21,3 +21,7 @@ library(grid)
 ```
 
 # Import Data
+```{r}
+NL_data = read.csv("data_month_NL.csv")
+```
+
