@@ -141,8 +141,9 @@ Odeska, Mykolaivska, Sevastopilska, Khersonska, and Krym all show similar trends
 ```{r}
 agreggated_data = aggregate(cbind(nl_count_0,nl_count_4, nl_min_0, nl_min_4, nl_max_4, nl_mean_4, nl_sum_4, nl_nodata_4, nl_std_4, nl_median_4, nl_max_0, nl_mean_0, nl_sum_0, nl_nodata_0, nl_std_0, nl_median_0, tw_count, tw_n_settlements ) ~year+ reg+name+ area_sq_km, NL_data, FUN = median)
 join_aggregate = left_join(agreggated_data, GT_NL_data, by = c("year"="year", "reg"="reg", "name"="name"))
+join_aggregate = left_join(join_aggregate, GDP_data, by = c("year"="year", "reg"="reg"))
 subset_join_agg = subset(join_aggregate, reg == "UA_51"|reg == "UA_40"|reg == "UA_43"|reg == "UA_48"|reg == "UA_65" )
-
+# here I am combining the data by condensing the Night Light data by taking the median of each value by year
 ```
 
 ```{r}
@@ -167,25 +168,74 @@ Here we have a visual of the relaionship between the median number of tweets in 
 
 # Log median tweets and median sum of night lights in a year
 ```{r}
-Odeska_sum = ggplot( data = subset(graph1_data, reg == "UA_51"))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Odeska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+Odeska_tweets= ggplot( data = subset(graph1_data, reg == "UA_51"))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Odeska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
 
-Sevastopilska_sum = ggplot( data = subset(graph1_data, reg == "UA_40"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Sevastopilska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+Sevastopilska_tweets = ggplot( data = subset(graph1_data, reg == "UA_40"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Sevastopilska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
 
-Krym_sum = ggplot( data = subset(graph1_data, reg == "UA_43"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Krym", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+Krym_tweets = ggplot( data = subset(graph1_data, reg == "UA_43"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Krym", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
 
-Mykolaivska_sum = ggplot( data = subset(graph1_data, reg == "UA_48"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Mykolaivska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+Mykolaivska_tweets = ggplot( data = subset(graph1_data, reg == "UA_48"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Mykolaivska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
 
-Khersonska_sum = ggplot( data = subset(graph1_data, reg == "UA_65"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Khersonska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+Khersonska_tweets = ggplot( data = subset(graph1_data, reg == "UA_65"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Khersonska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
 
-#grid.arrange(Odeska_sum,Sevastopilska_sum,Krym_sum,Mykolaivska_sum,Khersonska_sum, ncol=2, top = "Sum of NL Brightness Values w/ Snow Adjustment")
-Odeska_sum
-Sevastopilska_sum
-Krym_sum
-Mykolaivska_sum
-Khersonska_sum
+#grid.arrange(Odeska_tweets,Sevastopilska_tweets,Krym_tweets,Mykolaivska_tweets,Khersonska_tweets, ncol=2, top = "Sum of NL Brightness Values w/ Snow Adjustment")
+Odeska_tweets
+Sevastopilska_tweets
+Krym_tweets
+Mykolaivska_tweets
+Khersonska_tweets
   
 ```
 For these visualizations, I have scaled two values(median tweets and median sum of night lights in a year) in order to better understand the relationship between the two. For Regions like Odeska, Krym, and Sevastopilska, there appears to be an inverse relationship with median tweets and median sum of night lights in a year. For Mykolaivska and Khersonska, there is not as clear of relationship.
+
+# Twitter vs. GDP
+
+
+```{r}
+graph_exc_K_S = subset(subset_join_agg, reg != "UA_40" & reg !="UA_43", !is.na(GDP))
+GDP_comp_tweets = ggplot(graph_exc_K_S, aes(x = GDP, y= tw_count))+ geom_point(aes(color=name))+labs(title= "Median Tweets in Year vs. GDP", y="Median Number of Tweets", x= "GDP") +guides(color = guide_legend(title = "Region"))
+
+GDP_comp_tweets= GDP_comp_tweets + geom_smooth(method = "lm", se = FALSE)
+GDP_comp_tweets
+```
+
+```{r}
+GDP_histo = ggplot(graph_exc_K_S, aes(x = GDP)) +
+  geom_histogram(fill = "white", colour = "black") +
+  facet_grid(name ~ ., scales = "free")+labs(title="GDP Distributions")
+GDP_histo
+```
+
+```{r}
+look_outlier = subset(subset_join_agg, GDP >250000)
+```
+These outliers were all collected in 2021. Now we will look at the distribution without the outliers.
+
+
+```{r}
+GDP_histo1 = ggplot(subset(graph_exc_K_S, GDP<250000), aes(x = GDP)) +
+  geom_histogram(fill = "white", colour = "black") +
+  facet_grid(name ~ ., scales = "free")+labs(title="GDP Distributions")
+GDP_histo1
+```
+
+
+
+
+```{r}
+Odeska_GDP_tweets= ggplot( data = subset(subset_join_agg, reg == "UA_51"))+ geom_line(aes(x = year, y= scale(GDP)))+ geom_line(aes(x = year, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Odeska", y=" ")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+
+Mykolaivska_GDP_tweets = ggplot( data = subset(subset_join_agg, reg == "UA_48"), aes(x = year, y= GDP))+ geom_line(aes(x = year, y= scale(GDP)))+ geom_line(aes(x = year, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Mykolaivska", y=" ")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+
+Khersonska_GDP_tweets = ggplot( data = subset(subset_join_agg, reg == "UA_65"), aes(x = year, y= GDP))+ geom_line(aes(x = year, y= scale(GDP)))+ geom_line(aes(x = year, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Khersonska", y=" ")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+
+grid.arrange(Odeska_GDP_tweets, Mykolaivska_GDP_tweets, Khersonska_GDP_tweets, ncol=2, top = "GDP vs. Median # Tweets")
+
+  
+```
+
+There is a lot of missingness in data for GDP for Sevastopilska and Krym, so these regions were not included in this visualization. Above is the scaled values of Median number of tweets in a year and GDP of the year. A scaled value is used in order to better visualize this relationship.
+
 
 # Fixed Effect Models
 
@@ -206,7 +256,7 @@ coeftest(NL_fe_mod, vcov = vcovHC, type = "HC1")
 ```{r}
 # Unit FE == OLS with dummies for Units
 NL_lm_mod <- lm(Log_GDP ~ NLI + name - 1, data = all_data_FE)
-summary(NL_lm_mod)
+tidy(NL_lm_mod)
 ```
 ```{r}
 ### Time and Unit FE
@@ -215,13 +265,13 @@ NL_tefe_mod <- plm(Log_GDP ~ NLI,
                    index = c("name", "year"),
                    model = "within",
                    effect = "twoways")
-summary(NL_tefe_mod)
+tidy(NL_tefe_mod)
 coeftest(NL_tefe_mod, vcov = vcovHC, type = "HC1")
 ```
 ```{r}
 # Time and Unit FE == OLS with dummies for Units and Years
 NL_TU_lm_mod <- lm(Log_GDP ~ NLI + name + as.factor(year) - 1, data = all_data_FE)
-summary(NL_TU_lm_mod)
+tidy(NL_TU_lm_mod)
 ```
 ```{r}
 # Arranging results for presentation
@@ -234,14 +284,14 @@ model_se <- list(sqrt(diag(vcovHC(NL_fe_mod, type = "HC1"))),
 ```{r}
 
 # output latex table (type = "html" for HTML/CSS code)
-stargazer(NL_fe_mod, NL_lm_mod, NL_tefe_mod, NL_TU_lm_mod,
-          digits = 3,
-          header = FALSE,
-          type = "html",
-          se = model_se,
-          title = "Linear Panel Regression Models of GDP and Nightlights",
-          model.numbers = FALSE,
-          column.labels = c("(1)", "(2)", "(3)", "(4)"),
-          out = "table.htm")
+# stargazer(NL_fe_mod, NL_lm_mod, NL_tefe_mod, NL_TU_lm_mod,
+#           digits = 3,
+#           header = FALSE,
+#           type = "html",
+#           se = model_se,
+#           title = "Linear Panel Regression Models of GDP and Nightlights",
+#           model.numbers = FALSE,
+#           column.labels = c("(1)", "(2)", "(3)", "(4)"),
+#           out = "table.htm")
 ```
 
