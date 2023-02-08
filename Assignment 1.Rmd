@@ -237,7 +237,41 @@ grid.arrange(Odeska_GDP_tweets, Mykolaivska_GDP_tweets, Khersonska_GDP_tweets, n
 There is a lot of missingness in data for GDP for Sevastopilska and Krym, so these regions were not included in this visualization. Above is the scaled values of Median number of tweets in a year and GDP of the year. A scaled value is used in order to better visualize this relationship.
 
 
+# Tweets vs. Emigration Index
+
+```{r}
+
+emig_comp_tweets = ggplot(subset_join_agg, aes(x = Emigration_index, y= tw_count))+ geom_point(aes(color=name))+labs(title= "Median Tweets in Year vs. Emigration Index", y="Median Number of Tweets", x= "Emigration Index") +guides(color = guide_legend(title = "Region"))
+
+emig_comp_tweets= emig_comp_tweets + geom_smooth(method = "lm", se = FALSE)
+emig_comp_tweets
+```
+There is positive relationship with the emigration index and number of tweets and clear trend differences by region.
+
+```{r}
+Odeska_Em_tweet = ggplot( data = subset(subset_join_agg, reg == "UA_51"), aes(x = Emigration_index, y= tw_count))+ geom_line()+labs(title= "Odeska", y="Median # Tweets", x = "Emigration Index")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Sevastopilska_Em_tweet = ggplot( data = subset(subset_join_agg, reg == "UA_40"), aes(x = Emigration_index, y= tw_count))+ geom_line()+labs(title= "Sevastopilska", y="Median # Tweets", x = "Emigration Index")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Krym_Em_tweet = ggplot( data = subset(subset_join_agg, reg == "UA_43"), aes(x = Emigration_index, y= tw_count))+ geom_line()+labs(title= "Krym", y="Median # Tweets", x = "Emigration Index")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Mykolaivska_Em_tweet = ggplot( data = subset(subset_join_agg, reg == "UA_48"), aes(x = Emigration_index, y= tw_count))+ geom_line()+labs(title= "Mykolaivska", y="Median # Tweets", x = "Emigration Index")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Khersonska_Em_tweet = ggplot( data = subset(subset_join_agg, reg == "UA_65"), aes(x = Emigration_index, y= tw_count))+ geom_line()+labs(title= "Khersonska", y="Median # Tweets", x = "Emigration Index")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+grid.arrange(Odeska_Em_tweet,Sevastopilska_Em_tweet,Krym_Em_tweet,Mykolaivska_Em_tweet,Khersonska_Em_tweet, ncol=3, top = "Median number number of tweets in year vs. Emigraiton index")
+
+  
+  
+```
+The correlation between median number of tweets varies according to region. For many of the regions, there appears to be a positive trend.
+
+
+
+
 # Fixed Effect Models
+
+The fixed effect model is a special version of a linear regression model that can capture variation due to endogenous sources. From the EDA, it is clear that year and region differences or associated with variation not explained by the given data. For this reason, I will create a two-way fixed effect model that controls for oblast and time.
 
 ```{r}
 all_data_FE = all_data %>% 
@@ -245,34 +279,23 @@ all_data_FE = all_data %>%
 all_data_FE = subset(all_data_FE, reg == "UA_51"|reg == "UA_40"|reg == "UA_43"|reg == "UA_48"|reg == "UA_65" )
 
 ### Unit FE Model
-NL_fe_mod <- plm(Log_GDP ~ NLI,
+NL_fe_mod <- plm(Log_GDP ~ NLI+nl_sum_4+nl_median_4+Labor_index+tw_count+MBA_degree_index,
                  data = all_data_FE,
                  index = c("name", "year"),
-                 model = "within")
+                 model = "within", 
+                 effect="twoways")
 summary(NL_fe_mod)
+tidy(NL_fe_mod)
 coeftest(NL_fe_mod, vcov = vcovHC, type = "HC1")
 ```
 
 ```{r}
 # Unit FE == OLS with dummies for Units
-NL_lm_mod <- lm(Log_GDP ~ NLI + name - 1, data = all_data_FE)
+NL_lm_mod <- lm(Log_GDP ~ NLI + name +as.factor(year)+ nl_sum_4+nl_median_4+Labor_index, data = all_data_FE)
 tidy(NL_lm_mod)
 ```
-```{r}
-### Time and Unit FE
-NL_tefe_mod <- plm(Log_GDP ~ NLI,
-                   data = all_data_FE,
-                   index = c("name", "year"),
-                   model = "within",
-                   effect = "twoways")
-tidy(NL_tefe_mod)
-coeftest(NL_tefe_mod, vcov = vcovHC, type = "HC1")
-```
-```{r}
-# Time and Unit FE == OLS with dummies for Units and Years
-NL_TU_lm_mod <- lm(Log_GDP ~ NLI + name + as.factor(year) - 1, data = all_data_FE)
-tidy(NL_TU_lm_mod)
-```
+
+
 ```{r}
 # Arranging results for presentation
 model_se <- list(sqrt(diag(vcovHC(NL_fe_mod, type = "HC1"))),
