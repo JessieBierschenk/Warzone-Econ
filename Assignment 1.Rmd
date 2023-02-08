@@ -1,6 +1,8 @@
 ---
 title: "Assignment 1"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 date: "2023-02-07"
 ---
 
@@ -21,6 +23,9 @@ library(grid)
 library(haven)
 library(zoo)
 library(ggplot2)
+library(plm)
+library(AER)
+library(stargazer)
 ```
 
 # Import Data
@@ -142,15 +147,101 @@ subset_join_agg = subset(join_aggregate, reg == "UA_51"|reg == "UA_40"|reg == "U
 
 ```{r}
 
-labor_comp_NL = ggplot(subset_join_agg, aes(x = Labor_index, y= nl_sum_4))+ geom_point(aes(color=name))+labs(title= "Median Year Sum of NL Brightness Values w/ Snow Adjustment vs. Labor Index", y="Median NL") +guides(color = guide_legend(title = "Region"))
+labor_comp_NL = ggplot(subset_join_agg, aes(x = Labor_index, y= nl_sum_4))+ geom_point(aes(color=name))+labs(title= "Median Year Sum of NL Brightness Values w/ Snow Adjustment
+vs. Labor Index", y="Median NL", x= "Labor Index") +guides(color = guide_legend(title = "Region"))
 
 labor_comp_NL= labor_comp_NL + geom_smooth(method = "lm", se = FALSE)
 labor_comp_NL
 ```
 
+# Median Number of Tweets vs. Labor Index
+```{r}
 
+labor_comp_tweets = ggplot(subset_join_agg, aes(x = Labor_index, y= tw_count))+ geom_point(aes(color=name))+labs(title= "Median Tweets in Year vs. Labor Index", y="Median Number of Tweets", x= "Labor Index") +guides(color = guide_legend(title = "Region"))
 
+labor_comp_tweets= labor_comp_tweets + geom_smooth(method = "lm", se = FALSE)
+labor_comp_tweets
+```
 
+Here we have a visual of the relaionship between the median number of tweets in a year and the labor index. Overall, there appears to be a positive correlation. Clearly there are regional differences, however.
 
+# Log median tweets and median sum of night lights in a year
+```{r}
+Odeska_sum = ggplot( data = subset(graph1_data, reg == "UA_51"))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Odeska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
 
+Sevastopilska_sum = ggplot( data = subset(graph1_data, reg == "UA_40"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Sevastopilska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+
+Krym_sum = ggplot( data = subset(graph1_data, reg == "UA_43"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Krym", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+
+Mykolaivska_sum = ggplot( data = subset(graph1_data, reg == "UA_48"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Mykolaivska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+
+Khersonska_sum = ggplot( data = subset(graph1_data, reg == "UA_65"), aes(x = Date, y= nl_sum_4))+ geom_line(aes(x = Date, y= scale(nl_sum_4)))+ geom_line(aes(x = Date, y= scale(tw_count), color="Med # Tweets"))+labs(title= "Khersonska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+guides(color = guide_legend(title = "Legend"))
+
+#grid.arrange(Odeska_sum,Sevastopilska_sum,Krym_sum,Mykolaivska_sum,Khersonska_sum, ncol=2, top = "Sum of NL Brightness Values w/ Snow Adjustment")
+Odeska_sum
+Sevastopilska_sum
+Krym_sum
+Mykolaivska_sum
+Khersonska_sum
+  
+```
+For these visualizations, I have scaled two values(median tweets and median sum of night lights in a year) in order to better understand the relationship between the two. For Regions like Odeska, Krym, and Sevastopilska, there appears to be an inverse relationship with median tweets and median sum of night lights in a year. For Mykolaivska and Khersonska, there is not as clear of relationship.
+
+# Fixed Effect Models
+
+```{r}
+all_data_FE = all_data %>% 
+  mutate(Log_GDP = log(GDP))
+all_data_FE = subset(all_data_FE, reg == "UA_51"|reg == "UA_40"|reg == "UA_43"|reg == "UA_48"|reg == "UA_65" )
+
+### Unit FE Model
+NL_fe_mod <- plm(Log_GDP ~ NLI,
+                 data = all_data_FE,
+                 index = c("name", "year"),
+                 model = "within")
+summary(NL_fe_mod)
+coeftest(NL_fe_mod, vcov = vcovHC, type = "HC1")
+```
+
+```{r}
+# Unit FE == OLS with dummies for Units
+NL_lm_mod <- lm(Log_GDP ~ NLI + name - 1, data = all_data_FE)
+summary(NL_lm_mod)
+```
+```{r}
+### Time and Unit FE
+NL_tefe_mod <- plm(Log_GDP ~ NLI,
+                   data = all_data_FE,
+                   index = c("name", "year"),
+                   model = "within",
+                   effect = "twoways")
+summary(NL_tefe_mod)
+coeftest(NL_tefe_mod, vcov = vcovHC, type = "HC1")
+```
+```{r}
+# Time and Unit FE == OLS with dummies for Units and Years
+NL_TU_lm_mod <- lm(Log_GDP ~ NLI + name + as.factor(year) - 1, data = all_data_FE)
+summary(NL_TU_lm_mod)
+```
+```{r}
+# Arranging results for presentation
+model_se <- list(sqrt(diag(vcovHC(NL_fe_mod, type = "HC1"))),
+                 sqrt(diag(vcovHC(NL_lm_mod, type = "HC1"))),
+                 sqrt(diag(vcovHC(NL_tefe_mod, type = "HC1"))),
+                 sqrt(diag(vcovHC(NL_TU_lm_mod, type = "HC1"))))
+```
+
+```{r}
+
+# output latex table (type = "html" for HTML/CSS code)
+stargazer(NL_fe_mod, NL_lm_mod, NL_tefe_mod, NL_TU_lm_mod,
+          digits = 3,
+          header = FALSE,
+          type = "html",
+          se = model_se,
+          title = "Linear Panel Regression Models of GDP and Nightlights",
+          model.numbers = FALSE,
+          column.labels = c("(1)", "(2)", "(3)", "(4)"),
+          out = "table.htm")
+```
 
