@@ -19,20 +19,138 @@ library(scales)
 library(gridExtra)
 library(grid)
 library(haven)
+library(zoo)
+library(ggplot2)
 ```
 
 # Import Data
 ```{r}
 NL_data = read.csv("data_month_NL.csv")
 GDP_data = read_dta("Region by year GDP panel.dta")
+GT_NL_data = read_rds("data_NL_GT.rds")
 view(NL_data)
 view(GDP_data)
+view(GT_NL_data)
 ```
 
 # New dataset
 ```{r}
-all_data = left_join(NL_data, GDP_data, by = c("year"="year", "reg"="reg"))
+all_data1 = left_join(NL_data, GDP_data, by = c("year"="year", "reg"="reg"))
+all_data = left_join(all_data1, GT_NL_data, by = c("year"="year", "reg"="reg", "name"="name"))
 all_data=all_data %>% 
-  mutate(NLI=nl_sum_4/(area_sq_km - 0.141*nl_nodata_4),NLI2 = nl_mean_4/nl_std_4)
+  mutate(NLI=nl_sum_4/(area_sq_km - 0.141*nl_nodata_4),NLI2 = nl_mean_4/nl_std_4, Date = as.yearmon(paste(all_data$year, all_data$month), "%Y %m"))
+NL_data=NL_data %>% 
+  mutate(day= "01", Date= as.Date(with(NL_data, paste(year, month, day,sep="-")), "%Y-%m-%d"))
+
+
 ```
+
+In this new dataset, there will be repeated values that do not necessarily match up to the month. Any variable besides the NL information or the tw does not correspond to the given month.
+
+This project we will be focusing on the following regions: Odeska, Sevastopilska, Krym, Mykolaivska, Khersonska	
+
+
+# Area of Region
+
+An interesting aspect of each region to note before beginning analyses is the size. In order from largest region to smallest:
+
+1. Odeska (33,347.50 sq km)
+
+2. Khersonska (26,656.97 sq km)
+
+3. Krym (25,558.45 sq km)
+
+4. Mykolaivska (24,015.76 sq km)
+
+5. Sevastopilska (57.44 sq km)
+
+# Sum of NL
+
+```{r}
+region_subset = subset(all_data, reg == "UA_51"|reg == "UA_40"|reg == "UA_43"|reg == "UA_48"|reg == "UA_65" )
+```
+
+```{r}
+graph1_data = subset(NL_data, reg == "UA_51"|reg == "UA_40"|reg == "UA_43"|reg == "UA_48"|reg == "UA_65" )
+graph1_data = drop_na(graph1_data)
+lum_overtime = ggplot(graph1_data, aes(x = Date, y= nl_sum_4, color=name))+ geom_point()+labs(title= "Sum of NL Brightness Values w/ Snow Adjustment", y="Sum of NL")+ guides(color = guide_legend(title = "Region"))
+
+lum_overtime
+```
+Above shows the sum of night lights after adjusted for snow for each reason. There are clear regional differences with Sevastopilska having the smallest on average sum and Odeska having the largest. These numbers tend to make sense for the most part in terms if size of the region with Odeska being the largest region and Sevastopilska being the smallest. To get a better look at these sums, we will look at each region individually.
+
+```{r}
+Odeska_sum = ggplot( data = subset(graph1_data, reg == "UA_51"), aes(x = Date, y= nl_sum_4))+ geom_line()+labs(title= "Odeska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Sevastopilska_sum = ggplot( data = subset(graph1_data, reg == "UA_40"), aes(x = Date, y= nl_sum_4))+ geom_line()+labs(title= "Sevastopilska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Krym_sum = ggplot( data = subset(graph1_data, reg == "UA_43"), aes(x = Date, y= nl_sum_4))+ geom_line()+labs(title= "Krym", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Mykolaivska_sum = ggplot( data = subset(graph1_data, reg == "UA_48"), aes(x = Date, y= nl_sum_4))+ geom_line()+labs(title= "Mykolaivska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Khersonska_sum = ggplot( data = subset(graph1_data, reg == "UA_65"), aes(x = Date, y= nl_sum_4))+ geom_line()+labs(title= "Khersonska", y="Sum of NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+grid.arrange(Odeska_sum,Sevastopilska_sum,Krym_sum,Mykolaivska_sum,Khersonska_sum, ncol=3, top = "Sum of NL Brightness Values w/ Snow Adjustment")
+
+  
+```
+This visual provides a clearer view of trends over time by region. Odeska, Mykolaivska, and Khersonska have similar trends over the course of the ten years. Both Sevastopilska and Krym gradually increase over the ten years.
+
+# Median NL
+
+We will now look at the median luminosity of NL in a similar manner as the sum. Medians can be informative as they are not impacted by large outliers and can give a reasonable estimate for luminosity levels in the region.
+
+```{r}
+med_lum_overtime = ggplot(graph1_data, aes(x = Date, y= nl_median_4, color=name))+ geom_point()+labs(title= "Median NL Brightness Values w/ Snow Adjustment", y="Median NL")+ guides(color = guide_legend(title = "Region"))
+
+med_lum_overtime
+
+
+#mean_lum_overtime = ggplot(graph1_data, aes(x = Date, y= nl_mean_4, color=name))+ geom_point()+labs(title= "Median NL Brightness Values w/ Snow Adjustment", y="Median NL")+ guides(color = guide_legend(title = "Region"))
+
+#mean_lum_overtime
+
+```
+This graph provides an interesting insight as Sevastopilska showed the smallest sum of night lights in the previous visual, yet has the highest median NL values here. This trend is consistent with mean NL data. We will observe these trends on a regional basis below to better understand variations.
+
+
+```{r}
+Odeska_sum = ggplot( data = subset(graph1_data, reg == "UA_51"), aes(x = Date, y= nl_median_4))+ geom_line()+labs(title= "Odeska", y="Median NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Sevastopilska_sum = ggplot( data = subset(graph1_data, reg == "UA_40"), aes(x = Date, y= nl_median_4))+ geom_line()+labs(title= "Sevastopilska", y="Median NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Krym_sum = ggplot( data = subset(graph1_data, reg == "UA_43"), aes(x = Date, y= nl_median_4))+ geom_line()+labs(title= "Krym", y="Median NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Mykolaivska_sum = ggplot( data = subset(graph1_data, reg == "UA_48"), aes(x = Date, y= nl_median_4))+ geom_line()+labs(title= "Mykolaivska", y="Median NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Khersonska_sum = ggplot( data = subset(graph1_data, reg == "UA_65"), aes(x = Date, y= nl_median_4))+ geom_line()+labs(title= "Khersonska", y="Median NL")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+grid.arrange(Odeska_sum,Sevastopilska_sum,Krym_sum,Mykolaivska_sum,Khersonska_sum, ncol=3, top = "Median NL Brightness Values w/ Snow Adjustment")
+
+  
+```
+Odeska, Mykolaivska, Sevastopilska, Khersonska, and Krym all show similar trends with many occurences of median of zero. Sevastopilska has a unique trend of increasing over time and barely having any occurrences of zero.
+
+
+# Look at Median Sum NL per year compared to Labor Index
+```{r}
+agreggated_data = aggregate(cbind(nl_count_0,nl_count_4, nl_min_0, nl_min_4, nl_max_4, nl_mean_4, nl_sum_4, nl_nodata_4, nl_std_4, nl_median_4, nl_max_0, nl_mean_0, nl_sum_0, nl_nodata_0, nl_std_0, nl_median_0, tw_count, tw_n_settlements ) ~year+ reg+name+ area_sq_km, NL_data, FUN = median)
+join_aggregate = left_join(agreggated_data, GT_NL_data, by = c("year"="year", "reg"="reg", "name"="name"))
+subset_join_agg = subset(join_aggregate, reg == "UA_51"|reg == "UA_40"|reg == "UA_43"|reg == "UA_48"|reg == "UA_65" )
+
+```
+
+```{r}
+
+labor_comp_NL = ggplot(subset_join_agg, aes(x = Labor_index, y= nl_sum_4))+ geom_point(aes(color=name))+labs(title= "Median Year Sum of NL Brightness Values w/ Snow Adjustment vs. Labor Index", y="Median NL") +guides(color = guide_legend(title = "Region"))
+
+labor_comp_NL= labor_comp_NL + geom_smooth(method = "lm", se = FALSE)
+labor_comp_NL
+```
+
+
+
+
+
+
 
