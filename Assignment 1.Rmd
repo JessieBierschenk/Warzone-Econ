@@ -7,6 +7,8 @@ date: "2023-02-07"
 ---
 
 ```{r warning = FALSE, message = FALSE, include = FALSE}
+library(leaps)
+library(glmnet)
 library(tidyverse)
 library(lubridate)
 library(stringr)
@@ -318,3 +320,53 @@ model_se <- list(sqrt(diag(vcovHC(NL_fe_mod, type = "HC1"))),
 #           out = "table.htm")
 ```
 
+
+# Prediction Model Selection Methods 
+
+```{r}
+region_subset <- na.omit(region_subset)
+predictors <- subset(region_subset, select = c("area_sq_km", "Labor_index", "Holiday_index", "Mercedes_index", "Emigration_index", "Washing_machine_index", "Unemployment_benefits_index", "MBA_degree_index", "nl_median_0","nl_median_4"))
+GDP <- as.vector(region_subset$GDP)
+GDP <- as.numeric(GDP)
+
+
+# Best Subset Selection
+reg <- regsubsets(GDP ~ ., data = predictors, nvmax = ncol(predictors), method = c("backward"))
+
+# Ridge Regression
+ridge.model <- glmnet(as.matrix(predictors), GDP, alpha = 1)
+
+# Lasso Regression
+lasso.model <- glmnet(as.matrix(predictors), GDP, alpha = 0)
+
+# Model Evaluation
+
+reg.summary <- summary(reg)
+
+ridge.cv.results <- cv.glmnet(as.matrix(predictors), GDP, alpha = 1)
+ridge.best.lambda <- ridge.cv.results$lambda.min
+ridge.best.model <- glmnet(as.matrix(predictors), GDP, alpha = 1, lambda = ridge.best.lambda)
+
+lasso.cv.results <- cv.glmnet(as.matrix(predictors), GDP, alpha = 0)
+lasso.best.lambda <- lasso.cv.results$lambda.min
+lasso.best.model <- glmnet(as.matrix(predictors), GDP, alpha = 0, lambda = lasso.best.lambda)
+
+# Best Model 
+
+models <- list(ridge = ridge.cv.results, lasso = lasso.cv.results, reg = reg.summary)
+model.names <- c( "Ridge", "Lasso", "Best Subset Selection")
+
+cv.error <- sapply(models, function(model) {
+  mean(model$cvm)
+  })
+
+best.model.index <- which.min(cv.error)
+best.model.name <- model.names[best.model.index]
+best.model <- models[[best.model.index]]
+
+cat("The best model is:", best.model.name, "\n\n")
+cat("The best model summary:\n")
+print(best.model)
+
+```
+As seen above, the Ridge model is the best at predicting the GDP of a region in Russia
