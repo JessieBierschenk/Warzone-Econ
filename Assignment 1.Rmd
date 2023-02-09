@@ -82,6 +82,7 @@ lum_overtime = ggplot(graph1_data, aes(x = Date, y= nl_sum_4, color=name))+ geom
 
 lum_overtime
 ```
+
 Above shows the sum of night lights after adjusted for snow for each reason. There are clear regional differences with Sevastopilska having the smallest on average sum and Odeska having the largest. These numbers tend to make sense for the most part in terms if size of the region with Odeska being the largest region and Sevastopilska being the smallest. To get a better look at these sums, we will look at each region individually.
 
 ```{r}
@@ -99,6 +100,7 @@ grid.arrange(Odeska_sum,Sevastopilska_sum,Krym_sum,Mykolaivska_sum,Khersonska_su
 
   
 ```
+
 This visual provides a clearer view of trends over time by region. Odeska, Mykolaivska, and Khersonska have similar trends over the course of the ten years. Both Sevastopilska and Krym gradually increase over the ten years.
 
 # Median NL
@@ -116,6 +118,7 @@ med_lum_overtime
 #mean_lum_overtime
 
 ```
+
 This graph provides an interesting insight as Sevastopilska showed the smallest sum of night lights in the previous visual, yet has the highest median NL values here. This trend is consistent with mean NL data. We will observe these trends on a regional basis below to better understand variations.
 
 
@@ -134,6 +137,7 @@ grid.arrange(Odeska_sum,Sevastopilska_sum,Krym_sum,Mykolaivska_sum,Khersonska_su
 
   
 ```
+
 Odeska, Mykolaivska, Sevastopilska, Khersonska, and Krym all show similar trends with many occurences of median of zero. Sevastopilska has a unique trend of increasing over time and barely having any occurrences of zero.
 
 
@@ -164,6 +168,7 @@ labor_comp_tweets= labor_comp_tweets + geom_smooth(method = "lm", se = FALSE)
 labor_comp_tweets
 ```
 
+
 Here we have a visual of the relaionship between the median number of tweets in a year and the labor index. Overall, there appears to be a positive correlation. Clearly there are regional differences, however.
 
 # Log median tweets and median sum of night lights in a year
@@ -186,6 +191,7 @@ Mykolaivska_tweets
 Khersonska_tweets
   
 ```
+
 For these visualizations, I have scaled two values(median tweets and median sum of night lights in a year) in order to better understand the relationship between the two. For Regions like Odeska, Krym, and Sevastopilska, there appears to be an inverse relationship with median tweets and median sum of night lights in a year. For Mykolaivska and Khersonska, there is not as clear of relationship.
 
 # Twitter vs. GDP
@@ -246,6 +252,7 @@ emig_comp_tweets = ggplot(subset_join_agg, aes(x = Emigration_index, y= tw_count
 emig_comp_tweets= emig_comp_tweets + geom_smooth(method = "lm", se = FALSE)
 emig_comp_tweets
 ```
+
 There is positive relationship with the emigration index and number of tweets and clear trend differences by region.
 
 ```{r}
@@ -264,9 +271,8 @@ grid.arrange(Odeska_Em_tweet,Sevastopilska_Em_tweet,Krym_Em_tweet,Mykolaivska_Em
   
   
 ```
+
 The correlation between median number of tweets varies according to region. For many of the regions, there appears to be a positive trend.
-
-
 
 
 # Fixed Effect Models
@@ -277,9 +283,11 @@ The fixed effect model is a special version of a linear regression model that ca
 all_data_FE = all_data %>% 
   mutate(Log_GDP = log(GDP))
 all_data_FE = subset(all_data_FE, reg == "UA_51"|reg == "UA_40"|reg == "UA_43"|reg == "UA_48"|reg == "UA_65" )
+```
 
+```{r}
 ### Unit FE Model
-NL_fe_mod <- plm(Log_GDP ~ NLI+nl_sum_4+nl_median_4+Labor_index+tw_count+MBA_degree_index,
+NL_fe_mod <- plm(Log_GDP ~ NLI+nl_sum_4+nl_median_4+Labor_index+tw_count+MBA_degree_index+Unemployment_benefits_index+Emigration_index+Mercedes_index+Washing_machine_index,
                  data = all_data_FE,
                  index = c("name", "year"),
                  model = "within", 
@@ -291,18 +299,12 @@ coeftest(NL_fe_mod, vcov = vcovHC, type = "HC1")
 
 ```{r}
 # Unit FE == OLS with dummies for Units
-NL_lm_mod <- lm(Log_GDP ~ NLI + name +as.factor(year)+ nl_sum_4+nl_median_4+Labor_index, data = all_data_FE)
+NL_lm_mod <- lm(Log_GDP ~ as.factor(year)+name+NLI+nl_sum_4+nl_median_4+Labor_index+tw_count+MBA_degree_index+Unemployment_benefits_index+Emigration_index+Mercedes_index+Washing_machine_index, data = all_data_FE)
 tidy(NL_lm_mod)
 ```
 
 
-```{r}
-# Arranging results for presentation
-model_se <- list(sqrt(diag(vcovHC(NL_fe_mod, type = "HC1"))),
-                 sqrt(diag(vcovHC(NL_lm_mod, type = "HC1"))),
-                 sqrt(diag(vcovHC(NL_tefe_mod, type = "HC1"))),
-                 sqrt(diag(vcovHC(NL_TU_lm_mod, type = "HC1"))))
-```
+
 
 ```{r}
 
