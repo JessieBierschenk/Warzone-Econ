@@ -26,6 +26,7 @@ library(ggplot2)
 library(plm)
 library(AER)
 library(stargazer)
+library(dplyr)
 ```
 
 # Import Data
@@ -280,15 +281,14 @@ The correlation between median number of tweets varies according to region. For 
 The fixed effect model is a special version of a linear regression model that can capture variation due to endogenous sources. From the EDA, it is clear that year and region differences or associated with variation not explained by the given data. For this reason, I will create a two-way fixed effect model that controls for oblast and time.
 
 ```{r}
-all_data_FE = all_data %>% 
+subset_join_agg = subset_join_agg %>% 
   mutate(Log_GDP = log(GDP))
-all_data_FE = subset(all_data_FE, reg == "UA_51"|reg == "UA_40"|reg == "UA_43"|reg == "UA_48"|reg == "UA_65" )
 ```
 
 ```{r}
 ### Unit FE Model
 NL_fe_mod <- plm(Log_GDP ~ NLI+nl_sum_4+nl_median_4+Labor_index+tw_count+MBA_degree_index+Unemployment_benefits_index+Emigration_index+Mercedes_index+Washing_machine_index,
-                 data = all_data_FE,
+                 data = subset_join_agg,
                  index = c("name", "year"),
                  model = "within", 
                  effect="twoways")
@@ -299,24 +299,35 @@ coeftest(NL_fe_mod, vcov = vcovHC, type = "HC1")
 
 ```{r}
 # Unit FE == OLS with dummies for Units
-NL_lm_mod <- lm(Log_GDP ~ as.factor(year)+name+NLI+nl_sum_4+nl_median_4+Labor_index+tw_count+MBA_degree_index+Unemployment_benefits_index+Emigration_index+Mercedes_index+Washing_machine_index, data = all_data_FE)
+NL_lm_mod <- lm(Log_GDP ~ as.factor(year)+name+NLI+nl_sum_4+nl_median_4+Labor_index+tw_count+MBA_degree_index+Unemployment_benefits_index+Emigration_index+Mercedes_index+Washing_machine_index, data = subset_join_agg)
 tidy(NL_lm_mod)
 ```
 
 
+# Difference-difference
 
+For the difference-difference analysis, we will do the proportionate change in GDP from the previous year.
+```{r}
+subset_join_agg_1  = subset(subset_join_agg, reg == "UA_43")
+subset_join_agg_1 = subset_join_agg_1 %>% 
+  arrange(year) 
+subset_join_agg_1 = subset_join_agg_1 %>% 
+  mutate(Diff_year = year - lag(year, default=first(year)),  # Difference in time (just in case there are gaps)
+         Diff_growth = GDP - lag(GDP,default=first(GDP)), # Difference in route between years
+         Rate_percent = (Diff_growth /Diff_year)/ lag(GDP)) # growth rate
+
+```
 
 ```{r}
 
-# output latex table (type = "html" for HTML/CSS code)
-# stargazer(NL_fe_mod, NL_lm_mod, NL_tefe_mod, NL_TU_lm_mod,
-#           digits = 3,
-#           header = FALSE,
-#           type = "html",
-#           se = model_se,
-#           title = "Linear Panel Regression Models of GDP and Nightlights",
-#           model.numbers = FALSE,
-#           column.labels = c("(1)", "(2)", "(3)", "(4)"),
-#           out = "table.htm")
+subset_join_agg_try = subset_join_agg %>%
+    group_by(reg) %>%
+    arrange(year, .by_group = TRUE) %>%
+    mutate(diff_year = year - lag(year))
+
+
+try = subset_join_agg %>%
+    group_by(reg) %>%
+    mutate(diff = GDP - lag(GDP, order_by = year))
 ```
 
