@@ -1,6 +1,7 @@
 ---
 title: "Assignment 1"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 date: "2023-02-07"
@@ -306,28 +307,157 @@ tidy(NL_lm_mod)
 
 # Difference-difference
 
-For the difference-difference analysis, we will do the proportionate change in GDP from the previous year.
+For the difference-difference analysis, we will do the total change in GDP from the previous year.
 ```{r}
 subset_join_agg_1  = subset(subset_join_agg, reg == "UA_43")
 subset_join_agg_1 = subset_join_agg_1 %>% 
   arrange(year) 
 subset_join_agg_1 = subset_join_agg_1 %>% 
-  mutate(Diff_year = year - lag(year, default=first(year)),  # Difference in time (just in case there are gaps)
+  mutate(Diff_year = year - lag(year, n=1),  # Difference in time (just in case there are gaps)
          Diff_growth = GDP - lag(GDP,default=first(GDP)), # Difference in route between years
          Rate_percent = (Diff_growth /Diff_year)/ lag(GDP)) # growth rate
-
 ```
 
 ```{r}
+#U_40 Sevastopilska
+subset_join_agg_2  = subset(subset_join_agg, reg == "UA_40")
+GDP_diff = c(diff(subset_join_agg_2$GDP))
+numbers = as.data.frame(GDP_diff)
+numbers = numbers %>% 
+  add_column(year = c("2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020","2021", "2022"))
+numbers$year = as.numeric(numbers$year)
+try2 = merge(numbers, subset_join_agg_2, by.x = "year", by.y = "year")
 
-subset_join_agg_try = subset_join_agg %>%
-    group_by(reg) %>%
-    arrange(year, .by_group = TRUE) %>%
-    mutate(diff_year = year - lag(year))
+
+#U_43 Krym
+subset_join_agg_1  = subset(subset_join_agg, reg == "UA_43")
+GDP_diff = c(diff(subset_join_agg_1$GDP))
+numbers = as.data.frame(GDP_diff)
+numbers = numbers %>% 
+  add_column(year = c("2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020","2021", "2022"))
+numbers$year = as.numeric(numbers$year)
+try1 = merge(numbers, subset_join_agg_1, by.x = "year", by.y = "year")
 
 
-try = subset_join_agg %>%
-    group_by(reg) %>%
-    mutate(diff = GDP - lag(GDP, order_by = year))
+#U_48 Mykolaivska
+subset_join_agg_3  = subset(subset_join_agg, reg == "UA_48")
+GDP_diff = c(diff(subset_join_agg_3$GDP))
+numbers = as.data.frame(GDP_diff)
+numbers = numbers %>% 
+  add_column(year = c("2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020","2021", "2022"))
+numbers$year = as.numeric(numbers$year)
+try3 = merge(numbers, subset_join_agg_3, by.x = "year", by.y = "year")
+
+#U_51 Odeska
+subset_join_agg_4  = subset(subset_join_agg, reg == "UA_51")
+GDP_diff = c(diff(subset_join_agg_4$GDP))
+numbers = as.data.frame(GDP_diff)
+numbers = numbers %>% 
+  add_column(year = c("2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020","2021", "2022"))
+numbers$year = as.numeric(numbers$year)
+try4 = merge(numbers, subset_join_agg_4, by.x = "year", by.y = "year")
+
+
+#U_65 Khersonska
+subset_join_agg_5  = subset(subset_join_agg, reg == "UA_65")
+GDP_diff = c(diff(subset_join_agg_5$GDP))
+numbers = as.data.frame(GDP_diff)
+numbers = numbers %>% 
+  add_column(year = c("2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020","2021", "2022"))
+numbers$year = as.numeric(numbers$year)
+try5 = merge(numbers, subset_join_agg_5, by.x = "year", by.y = "year")
+```
+
+```{r}
+change_data=rbind(try1, try2, try3, try4, try5)
+```
+
+
+```{r}
+GDP_diff_histo = ggplot(change_data, aes(x = GDP_diff)) +
+  geom_histogram(fill = "white", colour = "black") +
+  facet_grid(name ~ ., scales = "free")+labs(title="Change in GDP Distributions")
+GDP_diff_histo
+```
+```{r}
+GDP_diff_histo1 = ggplot(subset(change_data, GDP_diff<250000), aes(x = GDP_diff)) +
+  geom_histogram(fill = "white", colour = "black") +
+  facet_grid(name ~ ., scales = "free")+labs(title="Change in GDP Distributions")
+GDP_diff_histo1
+```
+```{r}
+
+GDP_diff_line1 = ggplot(change_data, aes(y = GDP_diff, x =year)) +
+  geom_line() +
+  facet_grid(name ~ ., scales = "free")+labs(title="Change in GDP Distributions", y = "Percent Change in GDP")
+GDP_diff_line1
+```
+
+# Run Model with Total Change in GDP
+
+```{r}
+# Unit FE == OLS with dummies for Units
+change_data = subset(change_data, GDP_diff<250000)
+new_model <- lm(GDP_diff ~ as.factor(year)+name+NLI+nl_sum_4+nl_median_4+Labor_index+tw_count+MBA_degree_index+Unemployment_benefits_index+Emigration_index+Mercedes_index+Washing_machine_index, data =change_data)
+tidy(new_model)
+
+```
+2015, 201620172018, 2019, 2020, Unemployment Benefits Index, Emigration Index
+# Run Model with Percent Change GDP
+```{r}
+change_data = change_data %>% 
+  mutate(Perc_change = 100*GDP_diff/GDP)
+
+GDP_diff_line = ggplot(change_data, aes(y = Perc_change, x =year)) +
+  geom_line() +
+  facet_grid(name ~ ., scales = "free")+labs(title="Percent Change in GDP Distributions", y = "Percent Change in GDP")
+GDP_diff_line
+```
+```{r}
+# Unit FE == OLS with dummies for Units
+new_model2 <- lm(Perc_change ~ as.factor(year)+name+NLI+nl_sum_4+nl_median_4+Labor_index+tw_count+MBA_degree_index+Unemployment_benefits_index+Emigration_index+Mercedes_index+Washing_machine_index, data =change_data)
+tidy(new_model2)
+
+```
+
+*Significant in Level-Level Model (alpha = 0.1)*
+
+* Intercept
+* Krym
+* Odeska
+* 2013
+* 2019
+* Emigration Index
+
+*Significant in Difference-difference Model Total Change GDP (alpha = 0.1)*
+
+* 2015
+* 2016
+* 2017
+* 2018
+* 2019
+* 2020
+* Unemployment Benefits Index
+* Emigration Index
+
+*Significant in Difference-difference Model Percent Change GDP (alpha = 0.1)*
+
+* 2014
+* 2015
+* Krym
+* MBA Degree Index
+* Emigration Index
+
+```{r}
+# 
+# subset_join_agg_try = subset_join_agg %>%
+#     group_by(reg) %>%
+#     arrange(year, .by_group = TRUE) %>%
+#     mutate(diff_year = year - lag(year))
+# 
+# 
+# try = subset_join_agg %>%
+#     group_by(reg) %>%
+#     mutate(diff = GDP - lag(GDP, order_by = year))
 ```
 
