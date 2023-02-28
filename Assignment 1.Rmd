@@ -387,7 +387,7 @@ GDP_diff_histo1
 ```
 ```{r}
 
-GDP_diff_line1 = ggplot(change_data, aes(y = GDP_diff, x =year)) +
+GDP_diff_line1 = ggplot(subset(change_data, GDP_diff<250000), aes(y = GDP_diff, x =year)) +
   geom_line() +
   facet_grid(name ~ ., scales = "free")+labs(title="Change in GDP Distributions", y = "Percent Change in GDP")
 GDP_diff_line1
