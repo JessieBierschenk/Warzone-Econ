@@ -1,0 +1,446 @@
+---
+title: "Assignment 2"
+output: pdf_document
+date: "2023-03-07"
+---
+
+```{r}
+library(gtrendsR)
+library(dplyr)
+library(tidyverse)
+library(tibble)
+library(gridExtra)
+library(grid)
+library(lubridate)
+```
+
+
+
+```{r}
+gt_time <- '2010-01-01 2023-01-31'
+gt_regions <- c('UA-51','UA-40', 'UA-43', 'UA-48', 'UA-65')
+gt_topic_codes <- c('/m/014dsx', '/m/03gkl', '/g/122h6md7', '/m/07s_c', '/m/0g_fl', '/m/01dnzs','/m/0gfps3', '/m/04n7dpf', '/m/09jx2', '/m/01hhz', '/m/01sr3q', '/m/0273t5w', '/m/03w7y7', '/m/0h6dlrc', '/m/0h5wpdf', '/m/07gyp7', '/m/02r33n4', '/m/03gc5x', '/m/015gxd', '/m/0174k2', '/m/040b_t', '/m/06q07')
+gt_topic_names <- c('Travel', 'Holiday', 'Labor', 'Unemployment', 'Investment', 'Loan', 'Economy', 'Interest_rate', 'Inflation', 'Bankruptcy', 'Export', 'Mortgage_loan', 'Baggage', 'BMW', 'Mercedes', 'McDonalds', 'Calvin_Klein', 'Gucci', 'Emigration', 'Washing_machine', 'Fridge', 'Sony')
+gt_waiting_time <- 30
+
+# create an empty dataframe to store all datasets
+#data <- data.frame(matrix(ncol = 7, nrow = 0))
+
+# use for loop to scrape data 
+for (i in 1:length(gt_regions)){
+  for (j in 1:length(gt_topic_codes)){
+    temp <- gtrends(gt_topic_codes[j], geo = gt_regions[i], time = gt_time)
+    temp <- temp[["interest_over_time"]]
+    temp["keyword"][temp["keyword"] == gt_topic_codes[j]] =  gt_topic_names[j]
+    data <- rbind(data, temp)
+    Sys.sleep(gt_waiting_time)
+  }
+}
+
+#, '/m/0k8z', '/m/027x7n', '/m/03nw7w', '/m/0hbm6', '/m/022x_', '/m/0218w7', '/m/032tl', '/m/07s6fsf', '/m/039dhw', '/g/11c1xm7ml2', '/m/06k1r', '/m/01y857', '/m/02640pc', '/g/121mknrx', '/m/07bsy', '/m/05sq5', '/g/11clfj__ql'
+
+
+#, 'apple','Fitness', 'Recruitment', 'Savings', 'Computer_security', 'Unemployment_benefits', 'Fashion', 'MBA_degree', 'Procurement', 'Prozorro', 'Real_Estate', 'Rent', 'Import', 'Construction', 'Transport', 'Patent', 'work.ua'
+```
+
+```{r}
+gt_time <- '2010-01-01 2023-01-31'
+gt_regions <- c('UA-51','UA-40', 'UA-43', 'UA-48', 'UA-65')
+gt_topic_codes <- c('/m/0k8z', '/m/027x7n', '/m/03nw7w', '/m/0hbm6', '/m/022x_', '/m/0218w7')
+gt_topic_names <- c('apple','Fitness', 'Recruitment', 'Savings', 'Computer_security', 'Unemployment_benefits')
+gt_waiting_time <- 30
+
+# create an empty dataframe to store all datasets
+#data3 <- data.frame(matrix(ncol = 7, nrow = 0))
+
+# use for loop to scrape data 
+for (i in 1:length(gt_regions)){
+  for (j in 1:length(gt_topic_codes)){
+    temp <- gtrends(gt_topic_codes[j], geo = gt_regions[i], time = gt_time)
+    temp <- temp[["interest_over_time"]]
+    temp["keyword"][temp["keyword"] == gt_topic_codes[j]] =  gt_topic_names[j]
+    data3 <- rbind(data, temp)
+    Sys.sleep(gt_waiting_time)
+  }
+}
+
+#'Fashion', 'MBA_degree', 'Procurement', 'Prozorro'
+#, '/m/032tl', '/m/07s6fsf', '/m/039dhw', '/g/11c1xm7ml2'
+
+```
+
+```{r}
+#Newwwww
+gt_time <- '2010-01-01 2023-01-31'
+gt_regions <- c('UA-51','UA-40', 'UA-43', 'UA-48', 'UA-65')
+gt_topic_codes <- c('/m/0k8z', '/m/027x7n', '/m/03nw7w', '/m/0hbm6', '/m/022x_', '/m/0218w7')
+gt_topic_names <- c('apple','Fitness', 'Recruitment', 'Savings', 'Computer_security', 'Unemployment_benefits')
+gt_waiting_time <- 30
+
+# create an empty dataframe to store all datasets
+#data3_new <- data.frame(matrix(ncol = 7, nrow = 0))
+
+# use for loop to scrape data 
+for (i in 1:length(gt_regions)){
+  for (j in 1:length(gt_topic_codes)){
+    temp <- gtrends(gt_topic_codes[j], geo = gt_regions[i], time = gt_time)
+    temp <- temp[["interest_over_time"]]
+    temp["keyword"][temp["keyword"] == gt_topic_codes[j]] =  gt_topic_names[j]
+    data3_new <- rbind(data3_new, temp)
+    Sys.sleep(gt_waiting_time)
+  }
+}
+
+#'Fashion', 'MBA_degree', 'Procurement', 'Prozorro'
+#, '/m/032tl', '/m/07s6fsf', '/m/039dhw', '/g/11c1xm7ml2'
+
+```
+
+```{r}
+gt_time <- '2010-01-01 2023-01-31'
+gt_regions <- c('UA-51','UA-40', 'UA-43', 'UA-48', 'UA-65')
+gt_topic_codes <- c('/m/06k1r', '/m/01y857', '/m/02640pc', '/g/121mknrx', '/m/07bsy', '/m/05sq5', '/m/09bbm1', '/g/11clfj__ql')
+gt_topic_names <- c('Real_Estate', 'Rent', 'Import', 'Construction', 'Transport', 'Patent', 'Legal Advice', 'work.ua')
+gt_waiting_time <- 30
+
+# create an empty dataframe to store all datasets
+#data2 <- data.frame(matrix(ncol = 7, nrow = 0))
+
+# use for loop to scrape data 
+for (i in 1:length(gt_regions)){
+  for (j in 1:length(gt_topic_codes)){
+    temp <- gtrends(gt_topic_codes[j], geo = gt_regions[i], time = gt_time)
+    temp <- temp[["interest_over_time"]]
+    temp["keyword"][temp["keyword"] == gt_topic_codes[j]] =  gt_topic_names[j]
+    data2 <- rbind(data, temp)
+    Sys.sleep(gt_waiting_time)
+  }
+}
+```
+
+```{r}
+#NEW
+gt_time <- '2010-01-01 2023-01-31'
+gt_regions <- c('UA-51','UA-40', 'UA-43', 'UA-48', 'UA-65')
+gt_topic_codes <- c('/m/06k1r', '/m/01y857', '/m/02640pc', '/g/121mknrx', '/m/07bsy', '/m/05sq5', '/m/09bbm1', '/g/11clfj__ql')
+gt_topic_names <- c('Real_Estate', 'Rent', 'Import', 'Construction', 'Transport', 'Patent', 'Legal Advice', 'work.ua')
+gt_waiting_time <- 30
+
+# create an empty dataframe to store all datasets
+#data2_new <- data.frame(matrix(ncol = 7, nrow = 0))
+
+# use for loop to scrape data 
+for (i in 1:length(gt_regions)){
+  for (j in 1:length(gt_topic_codes)){
+    temp <- gtrends(gt_topic_codes[j], geo = gt_regions[i], time = gt_time)
+    temp <- temp[["interest_over_time"]]
+    temp["keyword"][temp["keyword"] == gt_topic_codes[j]] =  gt_topic_names[j]
+    data2_new <- rbind(data2_new, temp)
+    Sys.sleep(gt_waiting_time)
+  }
+}
+```
+
+```{r}
+#NEW
+gt_time <- '2010-01-01 2023-01-31'
+gt_regions <- c('UA-51','UA-40', 'UA-43', 'UA-48', 'UA-65')
+gt_topic_codes <- c('/m/06k1r', '/m/01y857', '/m/02640pc', '/g/121mknrx', '/m/07bsy', '/m/05sq5', '/m/09bbm1', '/g/11clfj__ql')
+gt_topic_names <- c('Real_Estate', 'Rent', 'Import', 'Construction', 'Transport', 'Patent', 'Legal Advice', 'work.ua')
+gt_waiting_time <- 30
+
+# create an empty dataframe to store all datasets
+data_retry_section <- data.frame(matrix(ncol = 7, nrow = 0))
+
+# use for loop to scrape data 
+for (i in 1:length(gt_regions)){
+  for (j in 1:length(gt_topic_codes)){
+    temp <- gtrends(gt_topic_codes[j], geo = gt_regions[i], time = gt_time)
+    temp <- temp[["interest_over_time"]]
+    temp["keyword"][temp["keyword"] == gt_topic_codes[j]] =  gt_topic_names[j]
+    data_retry_section <- rbind(data_retry_section, temp)
+    Sys.sleep(gt_waiting_time)
+  }
+}
+```
+
+```{r}
+gt_time <- '2010-01-01 2023-01-31'
+gt_regions <- c('UA-51','UA-40', 'UA-43', 'UA-48', 'UA-65')
+gt_topic_codes <- c('/m/032tl', '/m/07s6fsf', '/m/039dhw')
+gt_topic_names <- c('Fashion', 'MBA_degree', 'Procurement')
+gt_waiting_time <- 30
+
+# create an empty dataframe to store all datasets
+#data4 <- data.frame(matrix(ncol = 7, nrow = 0))
+
+# use for loop to scrape data 
+for (i in 1:length(gt_regions)){
+  for (j in 1:length(gt_topic_codes)){
+    temp <- gtrends(gt_topic_codes[j], geo = gt_regions[i], time = gt_time)
+    temp <- temp[["interest_over_time"]]
+    temp["keyword"][temp["keyword"] == gt_topic_codes[j]] =  gt_topic_names[j]
+    data4 <- rbind(data, temp)
+    Sys.sleep(gt_waiting_time)
+  }
+}
+
+#'Fashion', 'MBA_degree', 'Procurement', 'Prozorro'
+#, '/m/032tl', '/m/07s6fsf', '/m/039dhw', '/g/11c1xm7ml2'
+
+
+
+
+```
+
+```{r}
+gt_time <- '2010-01-01 2023-01-31'
+gt_regions <- c('UA-51','UA-40', 'UA-43', 'UA-48', 'UA-65')
+gt_topic_codes <- c('/m/032tl', '/m/07s6fsf', '/m/039dhw')
+gt_topic_names <- c('Fashion', 'MBA_degree', 'Procurement')
+gt_waiting_time <- 30
+
+# create an empty dataframe to store all datasets
+#data4_new <- data.frame(matrix(ncol = 7, nrow = 0))
+
+# use for loop to scrape data 
+for (i in 1:length(gt_regions)){
+  for (j in 1:length(gt_topic_codes)){
+    temp <- gtrends(gt_topic_codes[j], geo = gt_regions[i], time = gt_time)
+    temp <- temp[["interest_over_time"]]
+    temp["keyword"][temp["keyword"] == gt_topic_codes[j]] =  gt_topic_names[j]
+    data4_new <- rbind(data4_new, temp)
+    Sys.sleep(gt_waiting_time)
+  }
+}
+
+#'Fashion', 'MBA_degree', 'Procurement', 'Prozorro'
+#, '/m/032tl', '/m/07s6fsf', '/m/039dhw', '/g/11c1xm7ml2'
+
+
+```
+
+```{r}
+gt_time <- '2010-01-01 2023-01-31'
+gt_regions <- c('UA-51','UA-40', 'UA-43', 'UA-48', 'UA-65')
+gt_topic_codes <- c('/m/02nwq', '/m/09bbm1')
+gt_topic_names <- c('Entrepreneurship', 'Legal_advice')
+gt_waiting_time <- 30
+
+# create an empty dataframe to store all datasets
+#data5_new <- data.frame(matrix(ncol = 7, nrow = 0))
+
+# use for loop to scrape data 
+for (i in 1:length(gt_regions)){
+  for (j in 1:length(gt_topic_codes)){
+    temp <- gtrends(gt_topic_codes[j], geo = gt_regions[i], time = gt_time)
+    temp <- temp[["interest_over_time"]]
+    temp["keyword"][temp["keyword"] == gt_topic_codes[j]] =  gt_topic_names[j]
+    data5_new <- rbind(data5_new, temp)
+    Sys.sleep(gt_waiting_time)
+  }
+}
+#'Prozorro'
+#'/g/11c1xm7ml2'
+```
+
+
+```{r}
+a_main_data = rbind(data, data2, data3, data4, data3_new, data2_new, data4_new, data5_new)
+a_main_data = distinct(a_main_data)
+```
+
+
+```{r}
+a_main_data$name <- with(a_main_data, ifelse(geo == 'UA-51', 'Odeska',
+                         ifelse(geo == 'UA-40', 'Sevastopilska', ifelse(geo == 'UA-40', 'Sevastopilska', ifelse(geo =='UA-43', 'Krym', ifelse(geo == 'UA-48', 'Mykolaivska', 'Khersonska'))))))
+
+
+# change the <1 to 0s
+ a_main_data <- data.frame(lapply(a_main_data, function(x) {
+                  gsub("<1", "0.5", x)
+              }))
+
+ #make numerics
+a_main_data$hits = as.numeric(a_main_data$hits)
+```
+
+# Exploratory Data Analysis
+
+Beginning Note: Prozorro was not included as a topic in this analysis as I encountred issues scraping it. Also, any occurence of "<1" hits scaled in the data (1,503 to be precise) was changed to 0.5.
+
+```{r}
+Region_bar = ggplot(a_main_data, aes(x=name))+ geom_bar() + labs(title = "Distribution of Full Dataset by Oblast")
+Region_bar
+```
+Odeska having the highest proportion in the dataset.
+
+```{r}
+a_main_data$year = substr(a_main_data$date, 1, 4)
+```
+
+```{r}
+Most_Hits =a_main_data %>% 
+  group_by(name) %>%
+  top_n(1, hits)
+
+tibble(Most_Hits)
+```
+
+
+```{r}
+Max_Hit_Date_Od = ggplot( data = subset(Most_Hits, name == "Odeska"), aes(x = as.numeric(year)))+ geom_histogram(binwidth = 1) + labs(title = "Odeska", x = "Year")
+Max_Hit_Date_Sevastopilska = ggplot( data = subset(Most_Hits, name == "Sevastopilska"), aes(x = as.numeric(year)))+ geom_histogram(binwidth = 1) + labs(title = "Sevastopilska", x = "Year")
+Max_Hit_Date_Krym = ggplot( data = subset(Most_Hits, name == "Krym"), aes(x = as.numeric(year)))+ geom_histogram(binwidth = 1) + labs(title = "Krym", x = "Year")
+Max_Hit_Date_Mykolaivska = ggplot( data = subset(Most_Hits, name == "Mykolaivska"), aes(x = as.numeric(year)))+ geom_histogram(binwidth = 1) + labs(title = "Mykolaivska", x = "Year")
+Max_Hit_Date_Khersonska = ggplot( data = subset(Most_Hits, name == "Khersonska"), aes(x = as.numeric(year)))+ geom_histogram(binwidth = 1) + labs(title = "Khersonska", x = "Year")
+
+
+grid.arrange(Max_Hit_Date_Od, Max_Hit_Date_Sevastopilska, Max_Hit_Date_Krym, Max_Hit_Date_Mykolaivska, Max_Hit_Date_Khersonska, top = "Distribution of the Highest scaled hits per topic by year in data set")
+```
+For most of the oblasts, the highest (relative) hits per topic were around 2010-2012.
+
+The distribution of topics with the highest relative hits after 2015 is as follows:
+* Holiday: 3
+
+* Loan: 2
+
+* Transport: 2
+
+* Washing Machine: 2
+
+* BMW: 2
+
+* Fashion: 1
+
+* Fitness: 1
+
+* McDonalds: 1
+
+
+We also see a inferior mode in 2015 in Krym. Below we see the eight keywords associated with that count.
+
+```{r}
+Most_Hits$year = as.numeric(Most_Hits$year)
+look = Most_Hits %>% 
+  filter(year==2015, name =='Krym')
+tibble(look)
+```
+
+# Looking at Hit Distributions
+
+For some topics, the hit distribution over time varies noticeably by oblast, and, for other topics, not as much. Below we explore which topics have similar/different trends over time according to oblast.
+
+As explored previously, many topics had their highest (relative) hits between 2010-2013.
+
+
+# Travel Hits
+```{r}
+a_main_data$date = as.Date(a_main_data$date)
+
+Travel_hits = ggplot(subset(a_main_data, keyword =='Travel'), aes(x = date, y= hits))+ geom_line(aes(color=name))+labs(title= "Travel Hits Overtime by Region", y="# Hits", x= "Date") +guides(color = guide_legend(title = "Region"))
+
+Travel_hits
+```
+
+# Unemployment Hits
+
+```{r}
+a_main_data$date = as.Date(a_main_data$date)
+
+Unemployment_hits = ggplot(subset(a_main_data, keyword =='Unemployment'), aes(x = date, y= hits))+ geom_line(aes(color=name))+labs(title= "Unemployment Hits Overtime by Region", y="# Hits", x= "Date") +guides(color = guide_legend(title = "Region"))
+
+Unemployment_hits
+```
+
+An interesting finding to note: the Unemployment hits is relatively low in Krym for the entire time period except for 2016.
+
+# McDonalds Hits
+
+```{r}
+a_main_data$date = as.Date(a_main_data$date)
+
+McDonalds_hits = ggplot(subset(a_main_data, keyword =='McDonalds'), aes(x = date, y= hits))+ geom_line(aes(color=name))+labs(title= "McDonalds Hits Overtime by Region", y="# Hits", x= "Date") +guides(color = guide_legend(title = "Region"))
+
+McDonalds_hits
+```
+
+An interesting finding to note: the McDonalds hits is relatively low in Sevastopilska for the entire time period except for 2016.
+
+# Gucci Hits
+
+```{r}
+Gucci_hits = ggplot(subset(a_main_data, keyword =='Gucci'), aes(x = date, y= hits))+ geom_line(aes(color=name))+labs(title= "Gucci Hits Overtime by Region", y="# Hits", x= "Date") +guides(color = guide_legend(title = "Region"))
+
+Gucci_hits
+
+```
+
+An interesting finding to note: follows similar distribution with a peak around 2018.
+
+# Apple Hits
+
+```{r}
+Apple_hits = ggplot(subset(a_main_data, keyword =='apple'), aes(x = date, y= hits))+ geom_line(aes(color=name))+labs(title= "Apple Hits Overtime by Region", y="# Hits", x= "Date") +guides(color = guide_legend(title = "Region"))
+
+Apple_hits
+
+```
+
+
+# Fitness Hits
+
+```{r}
+Fitness_hits = ggplot(subset(a_main_data, keyword =='Fitness'), aes(x = date, y= hits))+ geom_line(aes(color=name))+labs(title= "Fitness Hits Overtime by Region", y="# Hits", x= "Date") +guides(color = guide_legend(title = "Region"))
+Fitness_hits
+
+```
+# Mortgage Loan Hits
+
+```{r}
+Mortgage_loan_hits = ggplot(subset(a_main_data, keyword =='Mortgage_loan'), aes(x = date, y= hits))+ geom_line(aes(color=name))+labs(title= "Mortgage Loan  Hits Overtime by Region", y="# Hits", x= "Date") +guides(color = guide_legend(title = "Region"))
+Mortgage_loan_hits
+
+```
+
+# Consistencies Worth Noting:
+
+Sevastopilska consistently has the lowest hit #; this oblast is also the smallest in terms of square km (57.44 sq km). Odeska and Mykolaivska consistently have the highest number of hits; Odeska is the largest oblast (33,347.50 sq km) and Mykolaivska is the fourth largest/second smallest (24,015.76 sq km).
+
+
+# [Scaled] Gucci Hits Vs. GDP by Oblast
+
+```{r}
+BIG_combine$date = as.Date(BIG_combine$date)
+
+Gucci_GDP = ggplot(subset(BIG_combine, keyword =='Gucci' & name =='Odeska'))+ geom_line(aes(x=date, y=scale(hits), color="# Hits"))+ geom_line(aes(x=date, y=scale(GDP)))+labs(title= "[Scaled] Gucci Hits and GDP Overtime by Region", x= "Date") +guides(color = guide_legend(title = "Legend"))
+
+Gucci_GDP
+
+```
+
+The GDP step-wise distribution is due to the large outlier (as explored in assignment 1) with an extremelhy high relative GDP 2021. Because these are the scaled values, this outlier creates a this shaped line.
+
+## Combining Data from Assignment 1 With This Data
+```{r}
+
+a_main_data$year = as.numeric(a_main_data$year)
+BIG_combine <- a_main_data %>% inner_join( subset_join_agg, 
+        by=c('year'='year', 'name'='name'))
+```
+
+
+
+
+
+
+
+
+
+```{r}
+#gt_waiting_time <- 30
+# sample case: Duke University
+gt_duke <- gtrends(c('/m/014dsx', '/m/03gkl'), geo = c("UA_51","UA_40", "UA_43", "UA_48", "UA_65" ), time = c("2010-01-01 2023-01-31"))
+plot(gt_duke)
+```
+
