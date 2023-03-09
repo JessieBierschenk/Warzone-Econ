@@ -421,6 +421,8 @@ Gucci_GDP
 
 The GDP step-wise distribution is due to the large outlier (as explored in assignment 1) with an extremelhy high relative GDP 2021. Because these are the scaled values, this outlier creates a this shaped line.
 
+
+
 ## Combining Data from Assignment 1 With This Data
 ```{r}
 
